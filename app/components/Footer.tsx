@@ -4,7 +4,7 @@ const Footer = () => {
   return (
     <footer className="bg-muted py-6">
       <div className="container mx-auto px-4 flex justify-between items-center">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground px-2">
           Data from{" "}
           <Link
             href="https://rickandmortyapi.com/"
