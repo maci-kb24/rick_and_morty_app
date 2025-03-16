@@ -5,15 +5,16 @@ import { gql } from "@apollo/client"
 import { useQuery } from "@apollo/client"
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useState } from "react";
-import { Character } from "@/lib/types";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FilterOption } from "@/app/components/CharacterExplorer"
+
 
 export const GET_CHARACTERS = gql`
-  query GetCharacters {
-    characters {
+  query GetCharacters($filter: FilterCharacter) {
+    characters(filter: $filter) {
       results {
         id
         name
@@ -29,10 +30,48 @@ export const GET_CHARACTERS = gql`
   }
 `
 
+ interface Character {
+  id: string
+  name: string
+  gender: string
+  status: string
+  species: string
+  origin: {
+    name: string
+  }
+  image: string
+}
 
-const CharacterList = () => {
-  const { loading, error, data } = useQuery(GET_CHARACTERS)
+
+type CharacterListProps = {
+  filters: FilterOption
+}
+
+
+const CharacterList = ({ filters }: CharacterListProps) => {
   const [characters, setCharacters] = useState<Character[]>([])
+
+
+  // create filter object for GraphQL query
+  const filterVariables = {
+    status: filters.status || undefined,
+    species: filters.species || undefined,
+  }
+  
+  // Query characters from  API
+  const { loading, error, data, refetch } = useQuery(GET_CHARACTERS,{
+    variables: {
+      filter: filterVariables
+    }
+  })
+
+  // reset when filter change
+  useEffect(() => {
+    setCharacters([])
+    refetch({
+      filter: filterVariables
+    })
+  }, [filters, refetch])
 
   useEffect(() => {
     if (data?.characters?.results) {
@@ -82,6 +121,7 @@ const CharacterList = () => {
     } 
   }
 
+  
   return (
     <>
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
