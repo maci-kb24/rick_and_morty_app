@@ -27,7 +27,7 @@ const SortControls = ({ sort, setSort}:SortControlsProps) => {
   return (
     <div className="space-y-4">
         <div className="text-lg font-medium">Sort By</div>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 sort-controls">
             <div className="space-y-2">
                 <Label htmlFor="sort-field">Sort</Label>
                 <Select value={sort.field} onValueChange={(value) => handleFieldChange(value as "name" | "origin")} >

@@ -121,3 +121,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+.filter-controls div button, .sort-controls div button {
+  width: 100%;
+}

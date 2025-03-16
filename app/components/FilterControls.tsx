@@ -31,10 +31,10 @@ const FilterControls = ({ filters, setFilters}:FilterControlsProps ) => {
         <div className="text-lg font-medium">
             <p>Filter</p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 filter-controls">
             <div className="space-y-2">
                 <Label htmlFor="status-filter">Status</Label>
-                <Select  value={filters.status || "all"} onValueChange={(value) => setFilters({ ...filters, status: value === "all" ? null : value })}>
+                <Select   value={filters.status || "all"} onValueChange={(value) => setFilters({ ...filters, status: value === "all" ? null : value })}>
                     <SelectTrigger id="status-filter">
                         <SelectValue placeholder="All" />
                     </SelectTrigger>
