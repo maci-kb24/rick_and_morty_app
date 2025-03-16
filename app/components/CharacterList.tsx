@@ -9,8 +9,7 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { FilterOption } from "@/app/components/CharacterExplorer"
-
+import { FilterOption, SortOption } from "./CharacterExplorer"
 
 export const GET_CHARACTERS = gql`
   query GetCharacters($filter: FilterCharacter) {
@@ -45,10 +44,11 @@ export const GET_CHARACTERS = gql`
 
 type CharacterListProps = {
   filters: FilterOption
+  sort: SortOption
 }
 
 
-const CharacterList = ({ filters }: CharacterListProps) => {
+const CharacterList = ({ filters, sort }: CharacterListProps) => {
   const [characters, setCharacters] = useState<Character[]>([])
 
 
@@ -62,7 +62,8 @@ const CharacterList = ({ filters }: CharacterListProps) => {
   const { loading, error, data, refetch } = useQuery(GET_CHARACTERS,{
     variables: {
       filter: filterVariables
-    }
+    },
+    notifyOnNetworkStatusChange: true
   })
 
   // reset when filter change
@@ -89,14 +90,6 @@ const CharacterList = ({ filters }: CharacterListProps) => {
     )
   }
 
-  // show empty message if no characters found
-  if(!loading && characters.length === 0) 
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">No characters found</p>
-      </div>
-  )
-
   // format status text
   const formatStatus = (status: string) => {
     switch (status.toLowerCase()) {
@@ -121,6 +114,33 @@ const CharacterList = ({ filters }: CharacterListProps) => {
     } 
   }
 
+  // sort characters
+  const sortedCharacters = [...characters].sort((a, b) => {
+    let valueA, valueB
+
+    if(sort.field === "name") {
+      valueA = a.name
+      valueB = b.name
+    } else {
+      valueA = a.origin.name
+      valueB = b.origin.name
+    }
+
+    if(sort.direction === "asc") {
+      return valueA.localeCompare(valueB)
+    } else {
+      return valueB.localeCompare(valueA)
+    }
+  })
+
+    // show empty message if no characters found
+    if(!loading && sortedCharacters.length === 0) 
+      return (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">No characters found</p>
+        </div>
+    )
+
   
   return (
     <>
@@ -141,7 +161,7 @@ const CharacterList = ({ filters }: CharacterListProps) => {
         </Card>
         ))}
 
-      {characters.map((character) => (
+      {sortedCharacters.map((character) => (
         <Card key={character.id} className="p-0">
           <CardHeader className="p-0">
             <Image src={character.image} alt={character.name} className="w-full h-48 object-cover rounded-t-lg" width={500} height={500} priority /> 
