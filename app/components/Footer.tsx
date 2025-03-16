@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LanguageSwitcher } from "./LanguageProvider";
 
 const Footer = () => {
   return (
@@ -15,6 +16,7 @@ const Footer = () => {
             Rick and Morty API
           </Link>
         </p>
+       <LanguageSwitcher /> 
       </div>
     </footer>
   );
