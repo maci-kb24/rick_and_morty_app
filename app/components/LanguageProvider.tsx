@@ -29,6 +29,12 @@ export const languages = {
     ascending: "Ascending",
     descending: "Descending",
     language: "Language",
+    page: "Page",
+    of: "of",
+    firstPage: "First Page",
+    previousPage: "Previous Page",
+    nextPage: "Next Page",
+    lastPage: "Last Page",
   },
   de: {
     name: "Name",
@@ -53,6 +59,12 @@ export const languages = {
     ascending: "Aufsteigend",
     descending: "Absteigend",
     language: "Sprache",
+    page: "Seite",
+    of: "von",
+    firstPage: "Erste Seite",
+    previousPage: "Vorherige Seite",
+    nextPage: "Nächste Seite",
+    lastPage: "Letzte Seite",
   },
 }
 

@@ -7,23 +7,7 @@ const createApolloClient = () => {
     link: new HttpLink({
       uri: "https://rickandmortyapi.com/graphql",
     }),
-    cache: new InMemoryCache({
-      typePolicies: {
-        Query: {
-          fields: {
-            characters: {
-              keyArgs: ["filter"],
-              merge(existing = { results: [] }, incoming) {
-                return {
-                  ...incoming,
-                  results: [...(existing.results || []), ...(incoming.results || [])],
-                }
-              },
-            },
-          },
-        },
-      },
-    }),
+    cache: new InMemoryCache(),
     defaultOptions: {
       watchQuery: {
         fetchPolicy: "cache-and-network",

@@ -1,17 +1,15 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { gql } from "@apollo/client";
-import { useQuery } from "@apollo/client";
+import { useEffect, useState } from "react";
+import { gql, useQuery } from "@apollo/client";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { useState } from "react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FilterOption, SortOption } from "./CharacterExplorer";
-import { Button } from "@/components/ui/button";
 import { useLanguage } from "./LanguageProvider";
+import Pagination from "./Pagination";
 
 export const GET_CHARACTERS = gql`
   query GetCharacters($page: Int, $filter: FilterCharacter) {
@@ -57,9 +55,8 @@ type CharacterListProps = {
 const CharacterList = ({ filters, sort }: CharacterListProps) => {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [page, setPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(true);
-  const loader = useRef<HTMLDivElement>(null);
   const { t } = useLanguage()
+  const [totalPages, setTotalPages] = useState(0);
 
   // create filter object for GraphQL query
   const filterVariables = {
@@ -68,12 +65,12 @@ const CharacterList = ({ filters, sort }: CharacterListProps) => {
   };
 
   // Query characters from  API
-  const { loading, error, data, refetch, fetchMore } = useQuery(
+  const { loading, error, data, refetch } = useQuery(
     GET_CHARACTERS,
     {
       variables: {
         filter: filterVariables,
-        page: 1,
+        page: page,
       },
       notifyOnNetworkStatusChange: true,
     }
@@ -92,62 +89,9 @@ const CharacterList = ({ filters, sort }: CharacterListProps) => {
   useEffect(() => {
     if (data?.characters?.results) {
       setCharacters(data.characters.results);
-      setHasNextPage(!data.characters.info.next);
+      setTotalPages(data.characters.info.pages);
     }
   }, [data]);
-
-  // Set up intersection observer for infinite scrolling
-  useEffect(() => {
-    const currentLoaderRef = loader.current;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !loading) {
-          loadMore();
-        }
-      },
-      { threshold: 1.0 }
-    )
-
-    if (currentLoaderRef) {
-      observer.observe(currentLoaderRef);
-    }
-
-    return () => {
-      if (currentLoaderRef) {
-        observer.unobserve(currentLoaderRef);
-      }
-    };
-  }, [hasNextPage, loading]);
-
-  // Load more characters
-  const loadMore = () => {
-    if (!hasNextPage || loading) return;
-
-    const nextPage = page + 1;
-    setPage(nextPage);
-
-    fetchMore({
-      variables: {
-        page: nextPage,
-        filter: filterVariables,
-      },
-      updateQuery: (prev, { fetchMoreResult }) => {
-        if (!fetchMoreResult) return prev;
-
-        setHasNextPage(!!fetchMoreResult.characters.info.next);
-
-        return {
-          characters: {
-            ...fetchMoreResult.characters,
-            results: [
-              ...prev.characters.results,
-              ...fetchMoreResult.characters.results,
-            ],
-          },
-        };
-      },
-    });
-  };
 
   // show error alert message
   if (error) {
@@ -185,6 +129,19 @@ const CharacterList = ({ filters, sort }: CharacterListProps) => {
     }
   };
 
+  const handlePageChange = (newPage: number) => {
+    if(newPage === page || loading ) return
+
+    setPage(newPage)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+
+    refetch({
+      filter: filterVariables,
+      page: newPage,
+    })
+
+  };
+
   // sort characters
   const sortedCharacters = [...characters].sort((a, b) => {
     let valueA, valueB;
@@ -212,6 +169,7 @@ const CharacterList = ({ filters, sort }: CharacterListProps) => {
       </div>
     );
 
+ 
   
 
   return (
@@ -279,14 +237,20 @@ const CharacterList = ({ filters, sort }: CharacterListProps) => {
           </Card>
         ))}
       </div>
-      {(loading || hasNextPage) && (
-        <div>
-          <div ref={loader}>
-            <Button variant="outline" disabled={loading} onClick={loadMore}>
-              {loading ? `${t("loadMore")}` : t("loadMore")}
-            </Button>
+
+      {/* Pagination */}
+      {totalPages > 0 && (
+        <>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            disabled={loading}
+          />
+          <div className="text-center text-sm text-muted-foreground mt-2">
+            <span className="cursor-pointer">{t("page")} {page} {t("of")} {totalPages}</span>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
